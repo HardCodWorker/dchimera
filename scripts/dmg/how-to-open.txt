@@ -1,0 +1,23 @@
+DChimera {VERSION} — клиент баз данных PostgreSQL, SQLite, MySQL. macOS 14 или новее, Apple silicon и Intel.
+
+Установка: перетащи DChimera в папку Applications.
+
+Приложение не подписано сертификатом Apple, поэтому при первом запуске macOS его заблокирует:
+  macOS 15 и новее: открой DChimera, нажми «Готово», затем «Системные настройки → Конфиденциальность и безопасность» → внизу «Всё равно открыть».
+  macOS 14: правый клик по DChimera в Applications → «Открыть» → «Открыть».
+Или одной командой в Терминале:  xattr -dr com.apple.quarantine /Applications/DChimera.app
+
+Дальше DChimera обновляется сама: кнопка «Check for updates…» на стартовом экране или меню DChimera → Check for Updates…
+
+---
+
+DChimera {VERSION} — database client for PostgreSQL, SQLite and MySQL. macOS 14 or later, Apple silicon and Intel.
+
+Install: drag DChimera to the Applications folder.
+
+The app is not signed with an Apple certificate, so macOS blocks the first launch:
+  macOS 15 and later: open DChimera, click "Done", then System Settings → Privacy & Security → "Open Anyway" at the bottom.
+  macOS 14: right-click DChimera in Applications → Open → Open.
+Or in Terminal:  xattr -dr com.apple.quarantine /Applications/DChimera.app
+
+After that DChimera updates itself: "Check for updates…" on the start screen, or DChimera menu → Check for Updates…
