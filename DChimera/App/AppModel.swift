@@ -68,6 +68,28 @@ final class AppModel: ObservableObject {
         Self.migrateSettingsFromBaza()
         connections = ConnectionStore.load()
         for c in connections { sessions[c.id] = DBSession(config: c) }
+        // Claude can add connections through the MCP server (another process): pick them up.
+        DistributedNotificationCenter.default().addObserver(forName: ConnectionsChanged.name, object: AppPaths.dataDirectory.path, queue: .main) { _ in
+            Task { @MainActor in AppModel.shared.reloadConnections() }
+        }
+    }
+
+    /// Reads connections.json again after another process changed it. Open sessions keep running.
+    func reloadConnections() {
+        let loaded = ConnectionStore.load()
+        let added = loaded.filter { sessions[$0.id] == nil }
+        withAnimation(Theme.spring) {
+            connections = loaded
+            for c in loaded {
+                if let s = sessions[c.id] { s.config = c } else { sessions[c.id] = DBSession(config: c) }
+            }
+        }
+        #if DEBUG
+        FileHandle.standardError.write(Data("reloaded connections: \(loaded.count), new: \(added.map(\.displayName))\n".utf8))
+        #endif
+        if let first = added.first {
+            showToast(added.count == 1 ? "Claude added “\(first.displayName)”" : "Claude added \(added.count) connections", symbol: "sparkles")
+        }
     }
 
     /// Copies the settings of the app's earlier name (Baza, bundle dev.baza.app) once.
@@ -202,6 +224,14 @@ final class AppModel: ObservableObject {
     func togglePin(_ id: UUID) {
         guard let i = connections.firstIndex(where: { $0.id == id }) else { return }
         withAnimation(Theme.spring) { connections[i].pinned.toggle() }
+        sessions[id]?.config = connections[i]
+        ConnectionStore.save(connections)
+    }
+
+    /// Settings → Claude (MCP): show or hide a connection from Claude.
+    func setMCPAccess(_ id: UUID, _ allowed: Bool) {
+        guard let i = connections.firstIndex(where: { $0.id == id }) else { return }
+        connections[i].mcpAccess = allowed
         sessions[id]?.config = connections[i]
         ConnectionStore.save(connections)
     }

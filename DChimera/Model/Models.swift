@@ -89,6 +89,8 @@ struct ConnectionConfig: Codable, Identifiable, Hashable, Sendable {
     var createdAt = Date()
     var lastUsedAt: Date?
     var lastPreview: String?
+    /// Claude (MCP) access; nil means the default: on, except for read-only (prod) connections.
+    var mcpAccess: Bool?
 
     init() {}
 
@@ -109,6 +111,7 @@ struct ConnectionConfig: Codable, Identifiable, Hashable, Sendable {
         createdAt = try c.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
         lastUsedAt = try c.decodeIfPresent(Date.self, forKey: .lastUsedAt)
         lastPreview = try c.decodeIfPresent(String.self, forKey: .lastPreview)
+        mcpAccess = try c.decodeIfPresent(Bool.self, forKey: .mcpAccess)
     }
 
     var displayName: String {
@@ -134,6 +137,13 @@ struct ConnectionConfig: Codable, Identifiable, Hashable, Sendable {
         let letters = words.prefix(2).compactMap { $0.first.map(String.init) }
         let joined = letters.joined().uppercased()
         return joined.isEmpty ? "DB" : joined
+    }
+
+    /// The environment tag: read-only connections count as prod, local hosts and SQLite files as local.
+    var envName: String {
+        if readOnly { return "prod" }
+        if kind == .sqlite || ["localhost", "127.0.0.1", "::1"].contains(host) { return "local" }
+        return "dev"
     }
 }
 
@@ -354,13 +364,39 @@ final class QueryTab: ObservableObject, Identifiable {
     let id = UUID()
     @Published var title: String
     @Published var text: String
-    @Published var result: QueryResult?
+    /// A new result clears the header sort.
+    @Published var result: QueryResult? {
+        didSet {
+            sort = nil
+            sortedRows = nil
+        }
+    }
     @Published var error: String?
     @Published var messages: [String] = []
     @Published var running = false
+    /// Header sort of the loaded rows (LocalSort); the result itself keeps the server's order.
+    @Published private(set) var sort: SortSpec?
+    @Published private(set) var sortedRows: [[String?]]?
 
     init(title: String, text: String) {
         self.title = title
         self.text = text
+    }
+
+    /// Rows in the order the grid shows them.
+    var shownRows: [[String?]] { sortedRows ?? result?.rows ?? [] }
+
+    /// The result as shown, for copy and export.
+    var shownResult: QueryResult? {
+        guard var r = result else { return nil }
+        if let sortedRows { r.rows = sortedRows }
+        return r
+    }
+
+    func toggleSort(_ column: String) {
+        guard let r = result else { return }
+        let next = LocalSort.next(sort, column)
+        sortedRows = next == nil ? nil : LocalSort.sorted(r.rows, columns: r.columns, by: next)
+        sort = next
     }
 }

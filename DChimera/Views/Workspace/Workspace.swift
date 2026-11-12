@@ -89,9 +89,11 @@ extension View {
 extension ConnectionConfig {
     /// Environment tag shown in the workspace (TablePlus-like colored labels).
     var envTag: (String, Color) {
-        if readOnly { return ("prod", Color(hex: 0xE5534B)) }
-        if kind == .sqlite || ["localhost", "127.0.0.1", "::1"].contains(host) { return ("local", Color(hex: 0x3CC47C)) }
-        return ("dev", Color(hex: 0x5EA2F0))
+        switch envName {
+        case "prod": ("prod", Color(hex: 0xE5534B))
+        case "local": ("local", Color(hex: 0x3CC47C))
+        default: ("dev", Color(hex: 0x5EA2F0))
+        }
     }
 }
 
@@ -916,17 +918,29 @@ struct DDLView: View {
     }
 }
 
+/// A read-only grid of a few rows already in memory, sorted by header clicks (Structure view).
+struct SortableGrid: View {
+    let columns: [String]
+    let rows: [[String?]]
+    @State private var sort: SortSpec?
+
+    var body: some View {
+        DataGrid(columns: columns, types: [], rows: LocalSort.sorted(rows, columns: columns, by: sort),
+                 sort: sort, onSort: { column in sort = LocalSort.next(sort, column) })
+    }
+}
+
 struct StructureView: View {
     @ObservedObject var model: TableDataModel
 
     var body: some View {
         if let d = model.details {
             VStack(spacing: 0) {
-                DataGrid(columns: ["column", "type", "nullable", "default", "key", "references"],
-                         types: [], rows: d.columns.map { [$0.name, $0.type, $0.nullable ? "YES" : "NO", $0.defaultValue, $0.isPrimaryKey ? "PRI" : nil, $0.references] })
+                SortableGrid(columns: ["column", "type", "nullable", "default", "key", "references"],
+                             rows: d.columns.map { [$0.name, $0.type, $0.nullable ? "YES" : "NO", $0.defaultValue, $0.isPrimaryKey ? "PRI" : nil, $0.references] })
                 Divider().opacity(0.4)
-                DataGrid(columns: ["index", "columns", "unique", "definition"], types: [],
-                         rows: d.indexes.map { [$0.name, $0.columns.joined(separator: ", "), $0.unique ? "YES" : "NO", $0.definition] })
+                SortableGrid(columns: ["index", "columns", "unique", "definition"],
+                             rows: d.indexes.map { [$0.name, $0.columns.joined(separator: ", "), $0.unique ? "YES" : "NO", $0.definition] })
                     .frame(height: 170)
             }
         } else {
@@ -992,11 +1006,11 @@ struct QueryTabView: View {
                 if let r = query.result {
                     Menu("Export") {
                         ForEach(ExportFormat.allCases) { f in
-                            Button("Copy as \(f.title)") { Exporter.copy(Exporter.render(r, as: f)) }
+                            Button("Copy as \(f.title)") { Exporter.copy(Exporter.render(query.shownResult ?? r, as: f)) }
                         }
                         Divider()
                         ForEach(ExportFormat.allCases) { f in
-                            Button("Save as \(f.title)…") { _ = Exporter.save(r, as: f, suggestedName: query.title) }
+                            Button("Save as \(f.title)…") { _ = Exporter.save(query.shownResult ?? r, as: f, suggestedName: query.title) }
                         }
                     }
                     .menuStyle(.borderlessButton)
@@ -1023,12 +1037,18 @@ struct QueryTabView: View {
                     .frame(maxWidth: .infinity, alignment: .leading).padding(14)
             }
         } else if let r = query.result {
-            DataGrid(columns: r.columns, types: r.columnTypes, rows: r.rows, onSelect: { key in
-                onDetail(key.map { k in
-                    RowDetailContext(title: query.title, columns: r.columns, types: r.columnTypes,
-                                     values: k.row < r.rows.count ? r.rows[k.row] : [], row: k.row, onEdit: nil)
-                })
-            })
+            let rows = query.shownRows
+            DataGrid(columns: r.columns, types: r.columnTypes, rows: rows,
+                     sort: query.sort, onSort: { column in
+                         query.toggleSort(column)
+                         onDetail(nil) // the grid drops its selection when the order changes
+                     },
+                     onSelect: { key in
+                         onDetail(key.map { k in
+                             RowDetailContext(title: query.title, columns: r.columns, types: r.columnTypes,
+                                              values: k.row < rows.count ? rows[k.row] : [], row: k.row, onEdit: nil)
+                         })
+                     })
         } else {
             VStack(spacing: 6) {
                 Text("⌘↩ runs the statement under the cursor, ⇧⌘↩ runs everything")

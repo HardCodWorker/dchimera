@@ -1,7 +1,17 @@
 import AppKit
 import SwiftUI
 
+/// `DChimera --mcp` runs the MCP server for Claude without a window; otherwise the app starts as usual.
 @main
+enum Entry {
+    static func main() {
+        if CommandLine.arguments.contains("--mcp") {
+            MCPServer.runForever()
+        }
+        DChimeraApp.main()
+    }
+}
+
 struct DChimeraApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @StateObject private var app = AppModel.shared
@@ -30,6 +40,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         #if DEBUG
         Task { @MainActor in
             if UpdateSelfTest.startIfRequested() { return }
+            if MCPSettingsShot.startIfRequested() { return }
             if !GridBenchmark.startIfRequested() { DemoAutomation.startIfRequested() }
         }
         #endif

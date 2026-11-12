@@ -49,6 +49,7 @@ Themes only change the look:
 - **⌘K:** jump to a connection, a table, a query from history, or a theme.
 - **Export:** CSV, JSON, Markdown.
 - **Updates:** DChimera checks GitHub Releases and updates itself (see below).
+- **Claude (MCP):** Claude Code, Claude Desktop or Cursor can read your databases through DChimera, and change them if you allow it (see below).
 
 ## Safety for production databases
 
@@ -59,6 +60,41 @@ Themes only change the look:
 - DChimera asks for confirmation before `DROP`, `TRUNCATE`, `ALTER`, and `DELETE` / `UPDATE` without `WHERE`.
 - A `SELECT` in a query tab is wrapped as `SELECT * FROM (…) AS dchimera_rows LIMIT n+1`. n is the row limit from Settings, 1000 by default.
 - For PostgreSQL and MySQL, `count(*)` never runs on its own: row counts come from statistics. For an exact number, press **Count**.
+
+## Claude and other AI assistants (MCP)
+
+DChimera is also an [MCP](https://modelcontextprotocol.io) server. Claude starts DChimera in the background (no window opens) and works with the connections you saved in DChimera. Passwords stay in the Keychain: Claude only sees connection names.
+
+You choose the access when you connect Claude. Register two servers and turn on the one you need:
+
+| Server | Command | Tools |
+| --- | --- | --- |
+| `dchimera-read` | `DChimera --mcp` | `list_connections`, `list_tables`, `describe_table`, `query` |
+| `dchimera-write` | `DChimera --mcp --write` | the same plus `execute` and `add_connection` |
+
+**Claude Code:** Settings → Claude (MCP) → **Copy command** for each mode, then run it in Terminal:
+
+```bash
+claude mcp add --scope user dchimera-read -- /Applications/DChimera.app/Contents/MacOS/DChimera --mcp
+```
+
+```bash
+claude mcp add --scope user dchimera-write -- /Applications/DChimera.app/Contents/MacOS/DChimera --mcp --write
+```
+
+Turn either one on or off in a session with `/mcp`.
+
+**Claude Desktop, Cursor:** **Copy config** gives both entries for `mcpServers` in the client's config file (for Claude Desktop, `~/Library/Application Support/Claude/claude_desktop_config.json`). Restart the client, then turn on the one you need in its tools menu.
+
+What each tool does:
+- `query` takes one SELECT / WITH / VALUES / TABLE / SHOW / EXPLAIN statement, opens the connection read-only and runs the statement in a read-only transaction. It returns up to 200 rows by default (`max_rows`, capped by the row limit in Settings).
+- `execute` runs any SQL, several statements in a row on one connection, so `BEGIN` … `COMMIT` works. DROP, TRUNCATE, ALTER and DELETE / UPDATE without WHERE open a DChimera confirmation window first (the same "Ask before…" setting as in the app). Only a mouse click on **Run anyway** runs it: the keyboard can only cancel.
+- `add_connection` saves a new PostgreSQL, MySQL or SQLite connection after checking that it connects. Claude never gets the password: DChimera opens a window where you type it, and keeps it in the Keychain. A running DChimera shows the new connection at once.
+
+In Settings → Claude (MCP):
+- **Let Claude use DChimera** turns every server off at once, even while Claude is connected.
+- Each connection has a switch. Read-only (prod) connections start hidden, because whatever Claude reads is sent to the model. A read-only connection stays read-only for `dchimera-write` too.
+- Claude Code also asks you before each tool call unless you allow it. A good setup is to always allow `query` and confirm `execute` each time.
 
 ## Install
 
@@ -174,6 +210,7 @@ gh release create v0.1.1 dist/DChimera-0.1.1.dmg --repo HardCodWorker/dchimera -
 
 - **Connections:** `~/Library/Application Support/DChimera/connections.json` (without passwords).
 - **History:** `~/Library/Application Support/DChimera/history/<id>.json`.
+- **Claude (MCP) switch:** `~/Library/Application Support/DChimera/mcp.json`. Per-connection access is stored in `connections.json`.
 - **Passwords:** the Keychain, service `dev.baza.app.connection`. The name is left over from the app's first name, so saved passwords keep working.
 - **Bundle id:** `dev.dchimera.app`.
 
@@ -195,6 +232,7 @@ DChimera/
                 ZoneViews (Stalker), DoomViews (Doom), LabViews (Breaking Bad), Components
   Views/        Workspace (start screen, toolbar, list, tabs, filter, Data/Structure/DDL, row panel),
                 Grid (NativeGrid on NSTableView), Editor (SQL editor), QuickSwitcher, ConnectionEditor, Settings, UpdateDialog
+  MCP/          MCP server for Claude (`DChimera --mcp [--write]`): JSON-RPC over stdio, tools, settings
   Debug/        self-test and benchmarks (Debug builds only)
 project.yml     XcodeGen project description
 scripts/        release-macos.sh (builds the .dmg), set-version.sh, make-icon.swift
@@ -211,6 +249,10 @@ Debug builds read these environment variables:
 | `DCHIMERA_DEMO_ONLY` | limits the tour to some themes, for example `doom,breakingbad` |
 | `DCHIMERA_BENCH_OUT` | grid benchmark |
 | `DCHIMERA_GLASS_FALLBACK=1` | frosted material instead of system glass (snapshots cannot draw Liquid Glass) |
+| `DCHIMERA_MCP_CONFIRM=yes` / `no` | answers the MCP confirmation window without showing it |
+| `DCHIMERA_MCP_PASSWORD=…` | answers the add_connection password window without showing it (`<cancel>` cancels) |
+| `DCHIMERA_MCP_WINDOW_TEST=1` / `keys` | shows the real MCP windows, logs whether they are on screen and closes them; `keys` also presses Tab, Space and Return in them |
+| `DCHIMERA_SETTINGS_SHOT=/path.png` | renders Settings → Claude (MCP) into a PNG and quits |
 
 ```bash
 DCHIMERA_DATA_DIR=/tmp/dchimera-test DCHIMERA_DEMO_OUT=/tmp/dchimera-shots build/Build/Products/Debug/DChimera.app/Contents/MacOS/DChimera

@@ -31,14 +31,114 @@ enum DemoAutomation {
         try? rep.representation(using: .png, properties: [:])?.write(to: dir.appendingPathComponent("\(name).png"))
     }
 
+    static var lastHit = ""
+
+    static var grids: [GridTableView] {
+        func find(_ v: NSView) -> [GridTableView] {
+            if let t = v as? GridTableView { return [t] }
+            return v.subviews.flatMap(find)
+        }
+        return mainWindow?.contentView.map(find) ?? []
+    }
+
+    static var grid: GridTableView? { grids.first }
+
+    /// The grid that has `column`, with the column's values in the order it shows them.
+    static func shown(_ column: String) -> (table: GridTableView, columns: [String], values: [String?])? {
+        for table in grids {
+            guard let g = table.controller?.config, let c = g.columns.firstIndex(of: column) else { continue }
+            return (table, g.columns, g.rows.map { c < $0.count ? $0[c] : nil })
+        }
+        return nil
+    }
+
+    /// A real click on a grid header: mouse down and up go through the window, the header view tracks them.
+    static func clickHeader(_ column: String, columns _: [String] = []) -> Bool {
+        guard let window = mainWindow, let found = shown(column), let header = found.table.headerView,
+              let c = found.columns.firstIndex(of: column), case let table = found.table,
+              let index = table.tableColumns.firstIndex(where: { $0.identifier.rawValue == "c\(c)" }) else { return false }
+        table.scrollColumnToVisible(index)
+        let rect = header.headerRect(ofColumn: index)
+        let point = header.convert(NSPoint(x: rect.midX, y: rect.midY), to: nil)
+        func event(_ type: NSEvent.EventType) -> NSEvent? {
+            NSEvent.mouseEvent(with: type, location: point, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+                               windowNumber: window.windowNumber, context: nil, eventNumber: 0, clickCount: 1,
+                               pressure: type == .leftMouseDown ? 1 : 0)
+        }
+        guard let down = event(.leftMouseDown), let up = event(.leftMouseUp) else { return false }
+        if let root = window.contentView?.superview ?? window.contentView {
+            let hit = root.hitTest(root.convert(point, from: nil))
+            lastHit = (hit.map { String(describing: type(of: $0)) } ?? "nil") + " key=\(window.isKeyWindow) active=\(NSApp.isActive)"
+        }
+        NSApp.postEvent(up, atStart: false)
+        // The test app is not the active app (macOS will not activate it from a script), so a click through the
+        // window would only activate it. Give the press to the header view itself; it tracks the posted release.
+        header.mouseDown(with: down)
+        return true
+    }
+
+    /// Clicks the header of `column` three times: ascending, descending, off. Returns one log line.
+    static func sortCheck(_ name: String, model: TableDataModel, column: String) async -> String {
+        func values() -> [String] {
+            guard let r = model.result, let i = r.columns.firstIndex(of: column) else { return [] }
+            return r.rows.compactMap { $0[i] }
+        }
+        func ordered(_ v: [String], ascending: Bool) -> Bool {
+            v.count > 1 && zip(v, v.dropFirst()).allSatisfy { ascending ? $0 <= $1 : $0 >= $1 }
+        }
+        var steps: [String] = []
+        for (n, expect) in [(1, "asc"), (2, "desc"), (3, "off")] {
+            guard clickHeader(column, columns: model.result?.columns ?? []) else { return "\(name) sort: FAIL header \(column) not found" }
+            await wait(0.9)
+            let ok: Bool
+            switch expect {
+            case "asc": ok = model.sort?.column == column && model.sort?.ascending == true && ordered(values(), ascending: true)
+            case "desc": ok = model.sort?.column == column && model.sort?.ascending == false && ordered(values(), ascending: false)
+            default: ok = model.sort == nil
+            }
+            steps.append("click \(n) \(expect) \(ok ? "ok" : "FAIL (hit=\(lastHit), sort=\(String(describing: model.sort)), first=\(values().prefix(3)))")")
+        }
+        return "\(name) sort by \(column): " + steps.joined(separator: ", ")
+    }
+
+    /// Header sorting of rows already loaded (query results, Structure): ascending, descending, original order.
+    static func localSortCheck(_ name: String, column: String, numeric: Bool) async -> String {
+        func ordered(_ values: [String?]?, ascending: Bool) -> Bool {
+            let v = (values ?? []).compactMap { $0 }
+            guard v.count > 1 else { return false }
+            return zip(v, v.dropFirst()).allSatisfy { a, b in
+                let o: ComparisonResult
+                if numeric, let x = Double(a), let y = Double(b) {
+                    o = x < y ? .orderedAscending : x > y ? .orderedDescending : .orderedSame
+                } else {
+                    o = a.localizedStandardCompare(b)
+                }
+                return ascending ? o != .orderedDescending : o != .orderedAscending
+            }
+        }
+        guard let before = shown(column)?.values else {
+            let seen = grids.map { "\($0.controller == nil ? "no controller" : ($0.controller?.config?.columns.joined(separator: ",") ?? "no config"))" }
+            return "\(name) sort by \(column): FAIL no grid with that column (window: \(mainWindow != nil), grids: \(seen))"
+        }
+        var steps: [String] = []
+        for (n, expect) in [(1, "asc"), (2, "desc"), (3, "original")] {
+            guard clickHeader(column) else { return "\(name) sort by \(column): FAIL header not found" }
+            await wait(0.7)
+            let now = shown(column)?.values
+            let ok: Bool
+            switch expect {
+            case "asc": ok = ordered(now, ascending: true) && now != before
+            case "desc": ok = ordered(now, ascending: false)
+            default: ok = now == before
+            }
+            steps.append("click \(n) \(expect) \(ok ? "ok" : "FAIL (first=\((now ?? []).prefix(3)))")")
+        }
+        return "\(name) sort by \(column): " + steps.joined(separator: ", ")
+    }
+
     /// Picture of the visible part of the data grid (an NSTableView).
     static func gridShot(_ name: String, _ dir: URL) {
-        func find(_ v: NSView) -> GridTableView? {
-            if let t = v as? GridTableView { return t }
-            for sub in v.subviews { if let t = find(sub) { return t } }
-            return nil
-        }
-        guard let table = mainWindow?.contentView.flatMap(find), let rep = table.bitmapImageRepForCachingDisplay(in: table.visibleRect) else { return }
+        guard let table = grid, let rep = table.bitmapImageRepForCachingDisplay(in: table.visibleRect) else { return }
         table.cacheDisplay(in: table.visibleRect, to: rep)
         try? rep.representation(using: .png, properties: [:])?.write(to: dir.appendingPathComponent("\(name).png"))
     }
@@ -96,6 +196,10 @@ enum DemoAutomation {
                 await wait(1.3)
                 shot("\(name)-2-table", dir)
                 gridShot("\(name)-2b-grid", dir)
+                log.append(await sortCheck(name, model: model, column: "name"))
+                model.mode = 1
+                await wait(0.9)
+                log.append(await localSortCheck("\(name) structure", column: "column", numeric: false))
                 model.mode = 2
                 await wait(0.9)
                 shot("\(name)-3-ddl", dir)
@@ -108,6 +212,8 @@ enum DemoAutomation {
             await wait(1.2)
             shot("\(name)-4-query", dir)
             log.append("\(name) query rows = \(q.result?.rows.count ?? -1)")
+            log.append(await localSortCheck("\(name) query", column: "avg_price", numeric: true))
+            log.append(await localSortCheck("\(name) query", column: "category", numeric: false))
             for tab in session.tabs { session.closeTab(tab.id) }
         }
         try? log.joined(separator: "\n").write(to: dir.appendingPathComponent("tour.txt"), atomically: true, encoding: .utf8)
@@ -151,6 +257,31 @@ enum UpdateSelfTest {
                 try? await Task.sleep(nanoseconds: 800_000_000)
                 DemoAutomation.shot("update-2-after-install", shots)
             }
+        }
+        return true
+    }
+}
+
+/// DCHIMERA_SETTINGS_SHOT=/path.png renders Settings → Claude (MCP) into a PNG and quits.
+@MainActor
+enum MCPSettingsShot {
+    static func startIfRequested() -> Bool {
+        guard let path = ProcessInfo.processInfo.environment["DCHIMERA_SETTINGS_SHOT"], !path.isEmpty else { return false }
+        let size = NSSize(width: 620, height: 560)
+        let host = NSHostingView(rootView: Form { MCPSettingsSection() }.formStyle(.grouped).environmentObject(AppModel.shared))
+        host.frame = NSRect(origin: .zero, size: size)
+        let window = NSWindow(contentRect: host.frame, styleMask: [.titled], backing: .buffered, defer: false)
+        window.contentView = host
+        window.setFrameOrigin(NSPoint(x: 120, y: 120))
+        window.orderFront(nil)
+        for w in NSApp.windows where w !== window { w.orderOut(nil) }
+        Task {
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            if let rep = host.bitmapImageRepForCachingDisplay(in: host.bounds) {
+                host.cacheDisplay(in: host.bounds, to: rep)
+                try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: path))
+            }
+            NSApp.terminate(nil)
         }
         return true
     }

@@ -17,6 +17,7 @@
 		23858AB7D05E4ACD36F17251 /* DChimeraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 664E0D4E8472B0ED8675F444 /* DChimeraApp.swift */; };
 		2C84DD6E80F3E6AE542FEA23 /* MySQLDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB768DA5C3F3E70B567226D4 /* MySQLDriver.swift */; };
 		2E0CF9BBD094618E8315B311 /* DatabaseDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 601442615987B054CB4A15AA /* DatabaseDriver.swift */; };
+		38B2F4FAECA773375B379996 /* MCPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D778AF63B0ABDCD45E40104 /* MCPServer.swift */; };
 		3E1214578EBACD03A1EB6E30 /* MySQLNIO in Frameworks */ = {isa = PBXBuildFile; productRef = DF1DF442B86A2A51016BC648 /* MySQLNIO */; };
 		4260B1086FDC9765E3A5C3AD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1602678BF23616F63BD9521 /* Assets.xcassets */; };
 		46FED4B167BF4A3F85698A61 /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9483864DDEEC94E48F1A81AC /* Storage.swift */; };
@@ -27,6 +28,7 @@
 		6F6498D2C93B6D75282CBE66 /* DataGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34F3CB4BD39146C238AA6A24 /* DataGrid.swift */; };
 		7031796F004D44A8B1BD1EDB /* DBSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10F193DD5B93871E3FD57CC9 /* DBSession.swift */; };
 		7BF565DBE3639EBE107763FD /* PostgresDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06444215734231F85934A0FA /* PostgresDriver.swift */; };
+		86BAD3427CEF6587E4DB664D /* LocalSort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14E62F64032AE92567A78BDA /* LocalSort.swift */; };
 		8CF436C905B568B88009D1CD /* Exporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8DB3D59BF1A5E1EBD3280ED /* Exporter.swift */; };
 		8E9CA8030659E40AE54AD0AA /* SQLDialect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FCBDDDD25EF3362929FECCA /* SQLDialect.swift */; };
 		9B4CC244B7872F259A7A7CBB /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33D8EFDF3ACAA56BD2E00836 /* Theme.swift */; };
@@ -35,6 +37,7 @@
 		B16BA3667B87C990910D2CCE /* SQLEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AEB943673A0A9BB1E5EFC28 /* SQLEditor.swift */; };
 		B1C6A2546105497D4A9CDFB7 /* UpdateDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1CB780DFB8908746938150B /* UpdateDialog.swift */; };
 		B50A8F4BC5E0233C4E363D83 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3665E7A60D8B7D3C7D676A27 /* SettingsView.swift */; };
+		B72A45C6828DC24F80017CEB /* MCPSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 979B86951B5C59544E4679F8 /* MCPSettings.swift */; };
 		D1363A1E5CD07A58806F9B0C /* DemoAutomation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A47FC7816A5580328DEDD738 /* DemoAutomation.swift */; };
 		D24F88C113DDE59E0E73E7CD /* TerminalFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = EECCF5A3CF7980D9439635AA /* TerminalFormat.swift */; };
 		D955EC5C50EE1B771C2625F4 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72227991EF8E61668966A3F9 /* RootView.swift */; };
@@ -45,6 +48,7 @@
 		E8543C1EA6345991F035EBFF /* DemoDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EF801C315B84437EE654EF6 /* DemoDatabase.swift */; };
 		EE43B99D1496F9CDAFA5E1AB /* Skin.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC0C0D6B8A63F5FEACA32346 /* Skin.swift */; };
 		F29B3899EED82411C0E00C7E /* TableDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B6D31604C014175F810F5E9 /* TableDataModel.swift */; };
+		F384731668377F901344EDBE /* MCPTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8DB4DF629B8F3A0DD8AC722 /* MCPTools.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,6 +56,7 @@
 		0B6D31604C014175F810F5E9 /* TableDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableDataModel.swift; sourceTree = "<group>"; };
 		0DFF07CADF0DD3573614FB5C /* ZoneViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoneViews.swift; sourceTree = "<group>"; };
 		10F193DD5B93871E3FD57CC9 /* DBSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBSession.swift; sourceTree = "<group>"; };
+		14E62F64032AE92567A78BDA /* LocalSort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalSort.swift; sourceTree = "<group>"; };
 		1566A6125B8F2DBE333902CF /* NativeGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeGrid.swift; sourceTree = "<group>"; };
 		160F21D55CF277DE90D7A68B /* LabViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabViews.swift; sourceTree = "<group>"; };
 		1674D0991177A03941DDBBC5 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
@@ -61,6 +66,7 @@
 		34F3CB4BD39146C238AA6A24 /* DataGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataGrid.swift; sourceTree = "<group>"; };
 		3665E7A60D8B7D3C7D676A27 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3EF801C315B84437EE654EF6 /* DemoDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoDatabase.swift; sourceTree = "<group>"; };
+		4D778AF63B0ABDCD45E40104 /* MCPServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPServer.swift; sourceTree = "<group>"; };
 		601442615987B054CB4A15AA /* DatabaseDriver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseDriver.swift; sourceTree = "<group>"; };
 		664E0D4E8472B0ED8675F444 /* DChimeraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DChimeraApp.swift; sourceTree = "<group>"; };
 		72227991EF8E61668966A3F9 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -71,6 +77,7 @@
 		8B31BA5CAECB7949E0B8BA5E /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
 		9483864DDEEC94E48F1A81AC /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
 		95C6EB2E22E2862C78ADAFAB /* SkinViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkinViews.swift; sourceTree = "<group>"; };
+		979B86951B5C59544E4679F8 /* MCPSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPSettings.swift; sourceTree = "<group>"; };
 		9E087180E38A2F974DC65703 /* Updater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updater.swift; sourceTree = "<group>"; };
 		A15EB85FBF521B3FFDB7609A /* QuickSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickSwitcher.swift; sourceTree = "<group>"; };
 		A1602678BF23616F63BD9521 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -85,6 +92,7 @@
 		DC0C0D6B8A63F5FEACA32346 /* Skin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Skin.swift; sourceTree = "<group>"; };
 		DDF58CD7035F94112EAAF93B /* SQLText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SQLText.swift; sourceTree = "<group>"; };
 		EECCF5A3CF7980D9439635AA /* TerminalFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalFormat.swift; sourceTree = "<group>"; };
+		F8DB4DF629B8F3A0DD8AC722 /* MCPTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPTools.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +149,7 @@
 			isa = PBXGroup;
 			children = (
 				C8DB3D59BF1A5E1EBD3280ED /* Exporter.swift */,
+				14E62F64032AE92567A78BDA /* LocalSort.swift */,
 				DDF58CD7035F94112EAAF93B /* SQLText.swift */,
 				EECCF5A3CF7980D9439635AA /* TerminalFormat.swift */,
 			);
@@ -197,6 +206,16 @@
 			path = Workspace;
 			sourceTree = "<group>";
 		};
+		7C3F3588526F382D1EAC2987 /* MCP */ = {
+			isa = PBXGroup;
+			children = (
+				4D778AF63B0ABDCD45E40104 /* MCPServer.swift */,
+				979B86951B5C59544E4679F8 /* MCPSettings.swift */,
+				F8DB4DF629B8F3A0DD8AC722 /* MCPTools.swift */,
+			);
+			path = MCP;
+			sourceTree = "<group>";
+		};
 		8ADDB2A33C668AF64538B00D /* Storage */ = {
 			isa = PBXGroup;
 			children = (
@@ -229,6 +248,7 @@
 				6CAF1FE0C1A57E0FEF8C29BC /* App */,
 				FA730EE94C35B30D43B8E1A1 /* Debug */,
 				2442B35503F88D4DA267FA93 /* Drivers */,
+				7C3F3588526F382D1EAC2987 /* MCP */,
 				406DCD57A311F764BBF967B7 /* Model */,
 				8ADDB2A33C668AF64538B00D /* Storage */,
 				774516B4ADBE67A129593758 /* Theme */,
@@ -338,6 +358,10 @@
 				8CF436C905B568B88009D1CD /* Exporter.swift in Sources */,
 				65DDA6875E6B0D1A80E6814D /* GridBenchmark.swift in Sources */,
 				A0DDCC74421E564BE48CEE6C /* LabViews.swift in Sources */,
+				86BAD3427CEF6587E4DB664D /* LocalSort.swift in Sources */,
+				38B2F4FAECA773375B379996 /* MCPServer.swift in Sources */,
+				B72A45C6828DC24F80017CEB /* MCPSettings.swift in Sources */,
+				F384731668377F901344EDBE /* MCPTools.swift in Sources */,
 				6023BA4ACECE5FB8E70DE5EC /* Models.swift in Sources */,
 				2C84DD6E80F3E6AE542FEA23 /* MySQLDriver.swift in Sources */,
 				DAB07FDA801CCD7C84294308 /* NativeGrid.swift in Sources */,
@@ -493,7 +517,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = NO;
@@ -506,7 +530,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.dchimera.app;
 				PRODUCT_NAME = DChimera;
 				SDKROOT = macosx;
@@ -522,7 +546,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = NO;
@@ -535,7 +559,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.dchimera.app;
 				PRODUCT_NAME = DChimera;
 				SDKROOT = macosx;

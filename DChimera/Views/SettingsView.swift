@@ -75,6 +75,7 @@ struct SettingsView: View {
                 }
                 Toggle("Ask before DROP, TRUNCATE, ALTER and DELETE/UPDATE without WHERE", isOn: $confirmDangerous)
             }
+            MCPSettingsSection()
             Section("Updates") {
                 LabeledContent("Version") {
                     HStack(spacing: 10) {
@@ -107,5 +108,98 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .frame(width: 620, height: 860)
+    }
+}
+
+/// Settings → Claude (MCP): the master switch, which connections Claude sees, and how to connect Claude
+/// in read-only or read & write mode.
+struct MCPSettingsSection: View {
+    @EnvironmentObject private var app: AppModel
+    @ObservedObject private var model = MCPSettingsModel.shared
+    @State private var copied: String?
+
+    var body: some View {
+        Section {
+            Toggle("Let Claude use DChimera", isOn: $model.enabled)
+            Text(model.enabled
+                 ? "You pick the access when you connect Claude: dchimera-read only reads, dchimera-write can also change data and add connections. Register both and turn on the one you need in Claude."
+                 : "Claude sees no tools from DChimera until you turn this on.")
+                .font(.system(size: 11.5))
+                .foregroundStyle(.secondary)
+            if model.enabled {
+                connections
+            }
+            setup
+        } header: {
+            Text("Claude (MCP)")
+        }
+    }
+
+    @ViewBuilder
+    private var connections: some View {
+        if app.connections.isEmpty {
+            Text("No connections yet.").foregroundStyle(.secondary)
+        } else {
+            ForEach(app.sortedConnections) { c in
+                Toggle(isOn: access(c.id)) {
+                    HStack(spacing: 8) {
+                        Text(c.displayName)
+                        Tag(text: c.envTag.0, color: c.envTag.1)
+                    }
+                }
+            }
+            Text("Read-only (prod) connections start hidden: whatever Claude reads is sent to the model. A read-only connection stays read-only even for dchimera-write.")
+                .font(.system(size: 11.5))
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    @ViewBuilder
+    private var setup: some View {
+        claudeCode(.readOnly, title: "Claude Code: read only",
+                   detail: "list_connections, list_tables, describe_table, query. Every query runs in a read-only transaction.")
+        claudeCode(.readWrite, title: "Claude Code: read & write",
+                   detail: "Also execute (DROP, TRUNCATE, ALTER and DELETE / UPDATE without WHERE ask you first) and add_connection (you type the password in a DChimera window).")
+        LabeledContent("Claude Desktop, Cursor") {
+            copyButton("desktop", label: "Copy config", MCPSetup.claudeDesktopJSON)
+        }
+        Text("Both entries for \"mcpServers\" in the client's config file. Restart the client, then turn on the one you need in its tools menu.")
+            .font(.system(size: 11.5))
+            .foregroundStyle(.secondary)
+    }
+
+    @ViewBuilder
+    private func claudeCode(_ mode: MCPMode, title: String, detail: String) -> some View {
+        let command = MCPSetup.claudeCodeCommand(mode)
+        LabeledContent(title) {
+            copyButton(mode.serverName, label: "Copy command", command)
+        }
+        VStack(alignment: .leading, spacing: 4) {
+            Text(detail)
+                .font(.system(size: 11.5))
+                .foregroundStyle(.secondary)
+            Text(command)
+                .font(.system(size: 11, design: .monospaced))
+                .textSelection(.enabled)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func copyButton(_ what: String, label: String, _ text: String) -> some View {
+        Button(copied == what ? "Copied" : label) {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(text, forType: .string)
+            copied = what
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                if copied == what { copied = nil }
+            }
+        }
+    }
+
+    private func access(_ id: UUID) -> Binding<Bool> {
+        Binding(
+            get: { app.connections.first { $0.id == id }?.mcpVisible ?? false },
+            set: { app.setMCPAccess(id, $0) }
+        )
     }
 }
